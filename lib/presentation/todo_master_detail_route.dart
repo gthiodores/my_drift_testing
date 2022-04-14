@@ -16,6 +16,9 @@ class TodoMasterDetailRoute extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Todos'),
+        leading: _buildActionButton(context, onPressed: () {
+          ref.read(todoMasterDetailNotifierProvider.notifier).onEditingDone();
+        }),
         actions: [
           IconButton(
             onPressed: () {
@@ -49,6 +52,22 @@ class TodoMasterDetailRoute extends ConsumerWidget {
                   .read(todoMasterDetailNotifierProvider.notifier)
                   .onEditingDone,
             ),
+    );
+  }
+
+  Widget? _buildActionButton(
+    BuildContext context, {
+    required Function onPressed,
+  }) {
+    if (MediaQuery.of(context).size.width > 600) {
+      return null;
+    }
+
+    return IconButton(
+      onPressed: () {
+        onPressed();
+      },
+      icon: const Icon(Icons.arrow_back),
     );
   }
 
