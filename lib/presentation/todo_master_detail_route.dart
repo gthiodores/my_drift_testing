@@ -16,9 +16,13 @@ class TodoMasterDetailRoute extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Todos'),
-        leading: _buildActionButton(context, onPressed: () {
-          ref.read(todoMasterDetailNotifierProvider.notifier).onEditingDone();
-        }),
+        leading: _buildActionButton(
+          context,
+          isEditing: state.isEditing,
+          onPressed: () {
+            ref.read(todoMasterDetailNotifierProvider.notifier).onEditingDone();
+          },
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -29,17 +33,29 @@ class TodoMasterDetailRoute extends ConsumerWidget {
         ],
       ),
       body: MediaQuery.of(context).size.width < 600
-          ? _buildMobileLayout(
-              isEditing: state.isEditing,
-              actionOnTodoSelected: (todo) {
-                ref
-                    .read(todoMasterDetailNotifierProvider.notifier)
-                    .onTodoSelected(todo);
+          ? WillPopScope(
+              onWillPop: () async {
+                if (state.isEditing) {
+                  ref
+                      .read(todoMasterDetailNotifierProvider.notifier)
+                      .onEditingDone();
+                  return false;
+                }
+
+                return true;
               },
-              onEditingDone: ref
-                  .read(todoMasterDetailNotifierProvider.notifier)
-                  .onEditingDone,
-              selectedTodo: state.selectedTodo,
+              child: _buildMobileLayout(
+                isEditing: state.isEditing,
+                actionOnTodoSelected: (todo) {
+                  ref
+                      .read(todoMasterDetailNotifierProvider.notifier)
+                      .onTodoSelected(todo);
+                },
+                onEditingDone: ref
+                    .read(todoMasterDetailNotifierProvider.notifier)
+                    .onEditingDone,
+                selectedTodo: state.selectedTodo,
+              ),
             )
           : _buildTabletLayout(
               selectedTodo: state.selectedTodo,
@@ -57,9 +73,10 @@ class TodoMasterDetailRoute extends ConsumerWidget {
 
   Widget? _buildActionButton(
     BuildContext context, {
+    required bool isEditing,
     required Function onPressed,
   }) {
-    if (MediaQuery.of(context).size.width > 600) {
+    if (MediaQuery.of(context).size.width > 600 || !isEditing) {
       return null;
     }
 
